@@ -18,9 +18,9 @@ type Equal1<A, B> = A extends B ? B extends A ? true : false : false
 type TestNever = Equal1<never, number> // never
 type TestNever1 = Equal<never, number> // false
 
-// type _4 = FromNumber<4>
-// type _5 = FromNumber<5>
-// type _6 = FromNumber<6>
+type _4 = FromNumber<4>
+type _5 = FromNumber<5>
+type _6 = FromNumber<6>
 // type A5 = Equal<_5, _6> // true
 // type B5 = Equal<_4, _5>// false
 
@@ -33,7 +33,7 @@ type And<A, B> = If<A, ToBoolean<B>, false>
 
 type Or<A, B> = If<A, true, ToBoolean<B>>
 
-type IsZero<T extends Num> = T["isZero"]
+type IsZero<T extends Num> = Equal<T, Zero>
 
 type IsNever<T> = Equal<T, never>
 
@@ -64,7 +64,7 @@ type Add<A extends Num, B extends Num> = {
     "No Zero": Succ<Add<Pre<A>, B>>
 }[If<IsZero<A>, "A is Zero", If<IsZero<B>, "B is Zero", "No Zero">>]
 
-// type _7 = Add<FromNumber<3>, FromNumber<4>> // Succ<Succ<Succ<Succ<Succ<Succ<Succ<Zero>>>>>>>
+type _7 = Add<FromNumber<3>, FromNumber<4>> // Succ<Succ<Succ<Succ<Succ<Succ<Succ<Zero>>>>>>>
 
 type Sub<A extends Num, B extends Num> = {
     "B is Zero": A
@@ -83,55 +83,43 @@ type MultHelper<A extends Num, B extends Num, R extends Num> = {
     "No Zero": MultHelper<Pre<A>, B, Add<B, R>> // '"No Zero"' is referenced directly or indirectly in its own type annotation.
 }[If<Or<IsZero<A>, IsZero<B>>, "Has Zero", "No Zero">]
 
-// type _8 = Mult<_2, _4> // Succ<Succ<Succ<Succ<Succ<Succ<Succ<Succ<Zero>>>>>>>>
-type Div<A extends Num, B extends Num, R extends Num = Zero> = {
-    "B is Zero or has Never": never
-    "A is Zero": Zero
-    "No Zero": Div1<Subt<A, B>, B, R>
-}[If<Or<IsZero<B>, Or<IsNever<A>, IsNever<B>>>, "B is Zero or has Never", If<IsZero<A>, "A is Zero", "No Zero">>]
-type Div1<A extends Num, B extends Num, R extends Num> = {
-    "zero": Zero
-    "never": never
-    "other": Div<A, B, Succ<R>>
-}[If<IsZero<A>, "zero", If<IsNever<A>, "never", "other">>]
-// type Div<A extends Num, B extends Num> = DivHelper<A, B, Zero>
+type _81 = Mult<FromNumber<9>, FromNumber<9>>
 
-// type DivHelper<A extends Num, B extends Num, R extends Num> = {
-//     "B is Zero or has Never": never
-//     "A is Zero": R
-//     "No Zero": DivHelper<Subt<A, B>, B, Succ<R>>
-// }[If<Or<IsZero<B>, Or<IsNever<A>, IsNever<B>>>, "B is Zero or has Never", If<IsZero<A>, "A is Zero", "No Zero">>]
+type Div<A extends Num, B extends Num> = {
+    "B0": never
+    "A0": Zero
+    "No Zero": DivHelper<A, B, B, Zero>
+}[If<Or<IsZero<B>, Or<IsNever<A>, IsNever<B>>>, "B0", If<IsZero<A>, "A0", "No Zero">>]
 
-type _99 = Div<FromNumber<4>, FromNumber<2>>
-type StringBool = "true" | "false";
-type IsZero1<T extends Num> = T extends Zero ? "true" : "false"
-type Subt<A extends Num, B extends Num> = {
-    "true": A
-    "false": {
-        "true": never
-        "false": Subt<Pre<A>, Pre<B>>
-    }[IsZero1<A>]
-}[IsZero1<B>]
-// type SafeSubt<T1 extends Num, T2 extends Num> =
-//     {
-//         "true": SubtResult<"false", T1>,
-//         "false": {
-//             "true": SubtResult<"true", T1>,
-//             "false": SafeSubt<Pre<T1>, Pre<T2>>
-//         }[IsZero1<T1>]
-//     }[IsZero1<T2>];
-// type Mod<TNumber extends Num, TModNumber extends Num> =
-//     {
-//         "true": Zero,
-//         "false": Mod2<TNumber, TModNumber, SafeSubt<TNumber, TModNumber>>
-//     }[IsZero1<TNumber>];
-// type Mod2<TNumber extends Num, TModNumber extends Num, TSubtResult extends SubtResult<any, any>> =
-//     {
-//         "true": TNumber,
-//         "false": Mod<TSubtResult["result"], TModNumber>
-//     }[TSubtResult["isOverflowing"]];
+type DivHelper<A extends Num, B extends Num, S extends Num, R extends Num> = {
+    "A0S0": Succ<R>
+    "A0S+": never
+    "A+S0": DivHelper<A, B, B, Succ<R>>
+    "A+S+": DivHelper<Pre<A>, B, Pre<S>, R>
+}[If<IsZero<A>, If<IsZero<S>, "A0S0", "A0S+">, If<IsZero<S>, "A+S0", "A+S+">>]
 
-// type TTT = Mod<FromNumber<25>, FromNumber<3>>
+type _24 = Mult<FromNumber<4>, FromNumber<6>>
+type exp1 = Add<FromNumber<8>, Add<FromNumber<8>, Mult<FromNumber<4>, FromNumber<2>>>> // 8 + 8 + (4 * 2) = 24
+type exp2 = Add<FromNumber<9>, Add<FromNumber<6>, Mult<FromNumber<5>, FromNumber<2>>>> // 9 + 6 + (5 * 2) = 25
+type exp3 = Add<FromNumber<9>, Add<FromNumber<6>, Mult<FromNumber<4>, FromNumber<2>>>> // 9 + 6 + (4 * 2) = 23
+type ___r1 = IsZero<Sub<_24, exp1>> // true
+type ___r2 = IsZero<Sub<_24, exp2>> // false
+type ___r3 = IsZero<Sub<_24, exp2>> // false
+
+// type DivHelper<A extends Num, B extends Num, S extends Num, R extends Num> = {
+//     "A is Zero": {
+//         "S is Zero": Succ<R>
+//         "S is not Zero": never
+//     }[If<IsZero<S>, "S is Zero", "S is not Zero">]
+//     "A is not Zero": {
+//         "S is Zero": DivHelper<A, B, B, Succ<R>>
+//         "S is not Zero": DivHelper<Pre<A>, B, Pre<S>, R>
+//     }[If<IsZero<S>, "S is Zero", "S is not Zero">]
+// }[If<IsZero<A>, "A is Zero", "A is not Zero">]
+
+type _3 = Div<FromNumber<6>, FromNumber<2>> // Succ<Succ<Succ<Zero>>>
+type _0 = Div<FromNumber<0>, FromNumber<2>> // Zero
+type ___never = Div<FromNumber<6>, FromNumber<0>> // never
 
 type Z = []
 type S<T extends Nat, U = (x: any, ...args: T) => void> = U extends (...args: infer P) => void ? P : never
@@ -143,24 +131,24 @@ type NumberToNat<T extends number> = NumberToNatHelper<T, Z>
 type NumberToNatHelper<T extends number, N extends Nat> = {
     "equal": N
     "not equal": NumberToNatHelper<T, S<N>>
-}[N["length"] extends T ? "equal" : "not equal"]
+}[If<Equal<N["length"], T>, "equal", "not equal">]
 
-// type Nat5 = NumberToNat<5> // [any, any, any, any, any]
-
-// type Number5 = NatToNumber<Nat5> // 5
+type Nat5 = NumberToNat<5> // [any, any, any, any, any]
+type Number5 = NatToNumber<Nat5> // 5
 
 // type PreNat<T extends Nat, U = (...args: T) => void> = U extends (x: any, ...args: infer P) => void ? P : never
 type NumToNumber<T extends Num> = NumToNumberHelper<T, Z>
 type NumToNumberHelper<N extends Num, Na extends Nat> = {
     "Zero": Na["length"]
     "Num": NumToNumberHelper<Pre<N>, S<Na>>
-}[N extends Zero ? "Zero" : "Num"]
+}[If<IsZero<N>, "Zero", "Num">]
 
 type NumberToNum<T extends number> = NumberToNumHelper<T, [], Zero>
 type NumberToNumHelper<T extends number, N extends Nat, R extends Num> = {
     "equal": R
     "not equal": NumberToNumHelper<T, S<N>, Succ<R>>
-}[N["length"] extends T ? "equal" : "not equal"]
+}[If<Equal<N["length"], T>, "equal", "not equal">]
 
-// type Num5 = NumberToNum<5> // Succ<Succ<Succ<Succ<Succ<Zero>>>>>
-// type __5 = NumToNumber<Num5> // 5
+type Num5 = NumberToNum<5> // Succ<Succ<Succ<Succ<Succ<Zero>>>>>
+type __5 = NumToNumber<Num5> // 5
+type ____r = NumToNumber<Sub<NumberToNum<99>, NumberToNum<20>>> // 79
